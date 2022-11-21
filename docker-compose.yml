@@ -1,0 +1,51 @@
+version: "3"
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    networks:
+      - network
+    restart: always
+    depends_on:
+      - redis
+      - rabbitmq
+  worker:
+    build: .
+    ports:
+      - "7331:7331"
+    networks:
+      - network
+    restart: always
+    depends_on:
+      - redis
+      - rabbitmq
+      - web
+    command: bash -c "celery -A app.main.celery worker --loglevel=info"
+
+
+
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - network
+    restart: always
+    depends_on:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:alpine
+    ports:
+      - "5672:5672"
+    networks:
+      - network
+    restart: always
+
+networks:
+  network:
+    driver: bridge
+
+
+
